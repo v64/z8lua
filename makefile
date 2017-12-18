@@ -31,7 +31,7 @@ MYLIBS=
 # enable Linux goodies
 MYCFLAGS= $(LOCAL) -DLUA_USE_LINUX
 MYLDFLAGS= -Wl,-E
-MYLIBS= -ldl -lreadline -lhistory -lncurses
+MYLIBS= -ldl -lreadline -lhistory
 
 
 
@@ -43,16 +43,16 @@ LIBS = -lm
 CORE_T=	liblua.a
 CORE_O=	lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o \
 	lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o  \
-	lundump.o lvm.o lzio.o ltests.o
+	lundump.o lvm.o lzio.o ltests.o lctype.o
 AUX_O=	lauxlib.o
-LIB_O=	lbaselib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o lstrlib.o \
+LIB_O=	lbaselib.o lbitlib.o lcorolib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o lstrlib.o \
 	loadlib.o linit.o
 
-LUA_T=	lua
+LUA_T=	z8lua
 LUA_O=	lua.o
 
-LUAC_T=	luac
-LUAC_O=	luac.o print.o
+#LUAC_T=	luac
+#LUAC_O=	luac.o print.o
 
 ALL_T= $(CORE_T) $(LUA_T) $(LUAC_T)
 ALL_O= $(CORE_O) $(LUA_O) $(LUAC_O) $(AUX_O) $(LIB_O)
@@ -75,7 +75,7 @@ $(LUAC_T): $(LUAC_O) $(CORE_T)
 	$(CC) -o $@ $(MYLDFLAGS) $(LUAC_O) $(CORE_T) $(LIBS) $(MYLIBS)
 
 clean:
-	rcsclean -u
+	rcsclean -u || true
 	$(RM) $(ALL_T) $(ALL_O)
 
 depend:
@@ -99,9 +99,12 @@ lapi.o: lapi.c lua.h luaconf.h lapi.h lobject.h llimits.h ldebug.h \
   lundump.h lvm.h
 lauxlib.o: lauxlib.c lua.h luaconf.h lauxlib.h
 lbaselib.o: lbaselib.c lua.h luaconf.h lauxlib.h lualib.h
+libitlib.o: lbitlib.c
 lcode.o: lcode.c lua.h luaconf.h lcode.h llex.h lobject.h llimits.h \
   lzio.h lmem.h lopcodes.h lparser.h ltable.h ldebug.h lstate.h ltm.h \
-  ldo.h lgc.h
+  ldo.h lgc.h lctype.h
+lcorolib.o: lcorolib.c
+lctype.o: lctype.c lctype.h
 ldblib.o: ldblib.c lua.h luaconf.h lauxlib.h lualib.h
 ldebug.o: ldebug.c lua.h luaconf.h lapi.h lobject.h llimits.h lcode.h \
   llex.h lzio.h lmem.h lopcodes.h lparser.h ltable.h ldebug.h lstate.h \
