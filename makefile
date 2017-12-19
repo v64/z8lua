@@ -14,7 +14,7 @@ CWARNS= -pedantic -Waggregate-return -Wcast-align \
 # -fomit-frame-pointer #-pg -malign-double
 TESTS= -g -DLUA_USER_H='"ltests.h"'
 
-LOCAL = $(TESTS) $(CWARNS)
+LOCAL = $(CWARNS)
 
 
 CC= gcc
@@ -43,10 +43,9 @@ LIBS = -lm
 CORE_T=	liblua.a
 CORE_O=	lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o \
 	lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o  \
-	lundump.o lvm.o lzio.o ltests.o lctype.o
+	lundump.o lvm.o lzio.o lctype.o
 AUX_O=	lauxlib.o
-LIB_O=	lbaselib.o lbitlib.o lcorolib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o lstrlib.o \
-	loadlib.o linit.o
+LIB_O=	lbaselib.o lcorolib.o ltablib.o lstrlib.o linit.o
 
 LUA_T=	z8lua
 LUA_O=	lua.o

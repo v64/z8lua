@@ -877,17 +877,12 @@ static int loadlib (lua_State *L) {
   static const luaL_Reg libs[] = {
     {"_G", luaopen_base},
     {"coroutine", luaopen_coroutine},
-    {"debug", luaopen_debug},
-    {"io", luaopen_io},
-    {"os", luaopen_os},
-    {"math", luaopen_math},
     {"string", luaopen_string},
     {"table", luaopen_table},
     {NULL, NULL}
   };
   lua_State *L1 = getstate(L);
   int i;
-  luaL_requiref(L1, "package", luaopen_package, 1);
   luaL_getsubtable(L1, LUA_REGISTRYINDEX, "_PRELOAD");
   for (i = 0; libs[i].name; i++) {
     lua_pushcfunction(L1, libs[i].func);
