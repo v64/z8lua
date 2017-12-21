@@ -546,6 +546,38 @@
 */
 
 
+#include "fix32.h"
+
+#undef LUA_USE_STRTODHEX
+#undef LUA_USE_LONGLONG
+#undef LUA_INTEGER
+#undef LUA_NUMBER_DOUBLE
+#undef LUA_NUMBER
+#undef LUA_IEEE754TRICK
+#undef LUAI_UACNUMBER
+
+#undef lua_number2str
+#undef l_mathop
+
+#define LUA_INTEGER	int16_t
+#define LUA_NUMBER	z8::fix32
+#define LUAI_UACNUMBER	z8::fix32
+#define l_mathop(x)	(z8::fix32::x)
+
+#define lua_number2str(s,n) [&]() { \
+  int i = sprintf(s, "%1.4f", (double)n); \
+  while (i > 0 && s[i - 1] == '0') s[--i] = '\0'; \
+  if (i > 0 && s[i - 1] == '.') s[--i] = '\0'; \
+  return i; }()
+
+#define luai_hashnum(i,n) (i = n.bits() * 2654435761)
+
+static inline z8::fix32 operator/(z8::fix32 x, int y) { return x / z8::fix32(y); }
+static inline z8::fix32 operator+(int x, z8::fix32 y) { return z8::fix32(x) + y; }
+
+static inline bool operator==(z8::fix32 x, int y) { return x == z8::fix32(y); }
+static inline bool operator <(z8::fix32 x, int y) { return x  < z8::fix32(y); }
+static inline bool operator <(int x, z8::fix32 y) { return z8::fix32(x)  < y; }
 
 #endif
 

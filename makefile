@@ -4,9 +4,8 @@
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
-CWARNS= -pedantic -Waggregate-return -Wcast-align \
-        -Wmissing-prototypes -Wpointer-arith -Wshadow \
-        -Wsign-compare -Wstrict-prototypes -Wundef -Wwrite-strings
+CWARNS= -pedantic -Wcast-align -Wpointer-arith -Wshadow \
+        -Wsign-compare -Wundef -Wwrite-strings
 # -Wcast-qual
 
 # -DEXTERNMEMCHECK -DHARDSTACKTESTS
@@ -17,7 +16,7 @@ TESTS= -g -DLUA_USER_H='"ltests.h"'
 LOCAL = $(CWARNS)
 
 
-CC= gcc
+CC= g++
 CFLAGS= -Wall $(MYCFLAGS) -O2
 AR= ar rcu
 RANLIB= ranlib
@@ -153,5 +152,6 @@ lvm.o: lvm.c lua.h luaconf.h ldebug.h lstate.h lobject.h llimits.h ltm.h \
   lzio.h lmem.h ldo.h lfunc.h lgc.h lopcodes.h lstring.h ltable.h lvm.h
 lzio.o: lzio.c lua.h luaconf.h llimits.h lmem.h lstate.h lobject.h ltm.h \
   lzio.h
+luaconf.h: fix32.h
 
 # (end of Makefile)

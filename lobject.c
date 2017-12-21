@@ -155,38 +155,43 @@ static lua_Number lua_strx2number (const char *s, char **endptr) {
 #endif
 
 
-static lua_Number readbin (const char **s, lua_Number r, int *count) {
-  for (; **s == '0' || **s == '1'; (*s)++) {
-    r += **s == '0' ? r : r + cast_num(1);
-    (*count)++;
+static lua_Number readany (const char **s, lua_Number r, int *count, int base, int max = INT_MAX) {
+  for (; lisxdigit(cast_uchar(**s)); (*s)++, max--) {
+    if (max > 0) {
+      int d = luaO_hexavalue(cast_uchar(**s));
+      if (d >= base) break;
+      r = r * cast_num(base) + cast_num(d);
+      (*count)++;
+    }
   }
   return r;
 }
 
 
 /*
-** convert a binary numeric string to a number
+** convert an hexadecimal or binary numeric string to a number
 */
-static lua_Number lua_strb2number (const char *s, char **endptr) {
-  lua_Number r = 0.0;
+static lua_Number lua_strany2number (const char *s, char **endptr, int base) {
+  lua_Number r = 0.0, f = 0.0;
   int e = 0, i = 0;
   int neg = 0;  /* 1 if number is negative */
   *endptr = cast(char *, s);  /* nothing is valid yet */
   while (lisspace(cast_uchar(*s))) s++;  /* skip initial spaces */
-  neg = isneg(&s);  /* check signal */
-  if (!(*s == '0' && (*(s + 1) == 'b' || *(s + 1) == 'B')))  /* check '0b' */
-    return 0.0;  /* invalid format (no '0b') */
-  s += 2;  /* skip '0b' */
-  r = readbin(&s, r, &i);  /* read integer part */
+  neg = isneg(&s);  /* check sign */
+  if (*s != '0' || (base == 2 && *(s + 1) != 'b' && *(s + 1) != 'B')
+                || (base == 16 && *(s + 1) != 'x' && *(s + 1) != 'X'))
+    return 0.0;  /* invalid format (no '0b' or '0x') */
+  s += 2;  /* skip '0x' or '0b' */
+  r = readany(&s, r, &i, base);  /* read integer part */
   if (*s == '.') {
     s++;  /* skip dot */
-    r = readbin(&s, r, &e);  /* read fractional part */
+    f = readany(&s, f, &e, base, base == 2 ? 16 : 4);  /* read fractional part */
   }
   if (i == 0 && e == 0)
     return 0.0;  /* invalid format (no digit) */
   *endptr = cast(char *, s);  /* valid up to here */
-  if (neg) r = -r;
-  return l_mathop(ldexp)(r, -e);
+  r = lua_Number::frombits(r.bits() | (uint32_t)f.bits() >> (base == 2 ? e : e * 4));
+  return neg ? -r : r;
 }
 
 
@@ -195,9 +200,9 @@ int luaO_str2d (const char *s, size_t len, lua_Number *result) {
   if (strpbrk(s, "nN"))  /* reject 'inf' and 'nan' */
     return 0;
   else if (strpbrk(s, "xX"))  /* hexa? */
-    *result = lua_strx2number(s, &endptr);
+    *result = lua_strany2number(s, &endptr, 16);
   else if (strpbrk(s, "bB"))  /* binary? */
-    *result = lua_strb2number(s, &endptr);
+    *result = lua_strany2number(s, &endptr, 2);
   else
     *result = lua_str2number(s, &endptr);
   if (endptr == s) return 0;  /* nothing recognized */
