@@ -559,6 +559,15 @@
 #undef lua_number2str
 #undef l_mathop
 
+#if defined(LUA_USE_READLINE)
+#define LUA_PROMPT	"\x01\x1b[1;95m\x02zepto8\x01\x1b[0m\x02> "
+#define LUA_PROMPT2	"\x01\x1b[1;95m\x02zepto8\x01\x1b[0m\x02>> "
+#else
+#define LUA_PROMPT	"zepto8> "
+#define LUA_PROMPT2	"zepto8>> "
+#endif
+
+#define LUA_PROGNAME	"z8lua"
 #define LUA_INTEGER	int16_t
 #define LUA_NUMBER	z8::fix32
 #define LUAI_UACNUMBER	z8::fix32
