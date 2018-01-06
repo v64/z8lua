@@ -879,6 +879,7 @@ static int loadlib (lua_State *L) {
     {"_G", luaopen_pico8},
     {"coroutine", luaopen_coroutine},
     {"string", luaopen_string},
+    {"debug", luaopen_debug},
     {"table", luaopen_table},
     {NULL, NULL}
   };
