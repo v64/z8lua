@@ -24,6 +24,7 @@
 #include "lauxlib.h"
 #include "llimits.h"
 #include "lobject.h"
+#include "lstate.h"
 
 #define TAU 6.2831853071795864769252867665590057683936
 
@@ -183,6 +184,27 @@ static int pico8_tonum(lua_State *l) {
     return 1;
 }
 
+static void update_prng(global_State *g) {
+    g->prngseed2 = g->prngseed1 + ((g->prngseed2 >> 16) | (g->prngseed2 << 16));
+    g->prngseed1 += g->prngseed2;
+}
+
+static int pico8_srand(lua_State *L) {
+    uint32_t seed = lua_tonumber(L, 1).bits();
+    G(L)->prngseed1 = seed ? seed : 0xdeadbeef;
+    G(L)->prngseed2 = G(L)->prngseed1 ^ 0xbead29ba;
+    for (int i = 0; i < 32; ++i)
+        update_prng(G(L));
+    return 0;
+}
+
+static int pico8_rnd(lua_State *L) {
+    uint32_t range = lua_isnone(L, 1) ? 0x10000 : lua_tonumber(L, 1).bits();
+    update_prng(G(L));
+    lua_pushnumber(L, lua_Number::frombits(G(L)->prngseed2 % range));
+    return 1;
+}
+
 static const luaL_Reg pico8lib[] = {
   {"max",   pico8_max},
   {"min",   pico8_min},
@@ -206,6 +228,8 @@ static const luaL_Reg pico8lib[] = {
   {"rotr",  pico8_rotr},
   {"tostr", pico8_tostr},
   {"tonum", pico8_tonum},
+  {"srand", pico8_srand},
+  {"rnd",   pico8_rnd},
   {NULL, NULL}
 };
 
