@@ -14,6 +14,7 @@
 
 #include <cstdint>
 #include <cmath>
+#include <type_traits>
 
 namespace z8
 {
@@ -33,16 +34,27 @@ struct fix32
     }
 
     /* Conversions up to int16_t are allowed */
-    inline fix32(int8_t x) : m_bits(x << 16) {}
-    inline fix32(uint8_t x) : m_bits(x << 16) {}
-    inline fix32(int16_t x) : m_bits(x << 16) {}
+    inline fix32(int8_t x)  : m_bits((int32_t)(x << 16)) {}
+    inline fix32(uint8_t x) : m_bits((int32_t)(x << 16)) {}
+    inline fix32(int16_t x) : m_bits((int32_t)(x << 16)) {}
 
     /* Anything above int16_t is risky because of precision loss */
-    inline fix32(uint16_t x) : m_bits(x << 16) {}
-    inline fix32(int32_t x) : m_bits(x << 16) {}
-    inline fix32(uint32_t x) : m_bits(x << 16) {}
-    inline fix32(int64_t x) : m_bits(x << 16) {}
-    inline fix32(uint64_t x) : m_bits(x << 16) {}
+    inline fix32(uint16_t x) : m_bits((int32_t)(x << 16)) {}
+    inline fix32(int32_t x)  : m_bits((int32_t)(x << 16)) {}
+    inline fix32(uint32_t x) : m_bits((int32_t)(x << 16)) {}
+    inline fix32(int64_t x)  : m_bits((int32_t)(x << 16)) {}
+    inline fix32(uint64_t x) : m_bits((int32_t)(x << 16)) {}
+
+    /* Support for long and unsigned long when it is a distinct
+     * type from the standard int*_t types, e.g. on Windows. */
+    template<typename T,
+             typename std::enable_if<(std::is_same<T, long>::value ||
+                                      std::is_same<T, unsigned long>::value) &&
+                                     !std::is_same<T, int32_t>::value &&
+                                     !std::is_same<T, uint32_t>::value &&
+                                     !std::is_same<T, int64_t>::value &&
+                                     !std::is_same<T, uint64_t>::value>::type *...>
+    inline fix32(T x) : m_bits((int32_t)(x << 16)) {}
 
     /* Explicit casts are all allowed */
     inline operator int8_t() const { return m_bits >> 16; }
@@ -53,6 +65,15 @@ struct fix32
     inline operator uint32_t() const { return m_bits >> 16; }
     inline operator int64_t() const { return m_bits >> 16; }
     inline operator uint64_t() const { return m_bits >> 16; }
+
+    template<typename T,
+             typename std::enable_if<(std::is_same<T, long>::value ||
+                                      std::is_same<T, unsigned long>::value) &&
+                                     !std::is_same<T, int32_t>::value &&
+                                     !std::is_same<T, uint32_t>::value &&
+                                     !std::is_same<T, int64_t>::value &&
+                                     !std::is_same<T, uint64_t>::value>::type *...>
+    inline operator T() const { return (T)(m_bits >> 16); }
 
     /* Directly initialise bits */
     static inline fix32 frombits(int32_t x)
