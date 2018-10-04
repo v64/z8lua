@@ -201,7 +201,7 @@ static int pico8_srand(lua_State *L) {
 static int pico8_rnd(lua_State *L) {
     uint32_t range = lua_isnone(L, 1) ? 0x10000 : lua_tonumber(L, 1).bits();
     update_prng(G(L));
-    lua_pushnumber(L, lua_Number::frombits(G(L)->prngseed2 % range));
+    lua_pushnumber(L, lua_Number::frombits(range ? G(L)->prngseed2 % range : 0));
     return 1;
 }
 
