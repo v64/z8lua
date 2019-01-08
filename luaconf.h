@@ -546,7 +546,8 @@
 */
 
 
-#include "fix32.h"
+#include <cstdint> // for int16_t
+#include "fix32.h" // for z8::fix32
 
 #undef LUA_USE_STRTODHEX
 #undef LUA_USE_LONGLONG
@@ -579,7 +580,7 @@
   if (i > 0 && s[i - 1] == '.') s[--i] = '\0'; \
   return i; }()
 
-#define luai_hashnum(i,n) (i = n.bits() * 2654435761)
+#define luai_hashnum(i,n) (i = (n * z8::fix32::frombits(2654435769u)).bits())
 
 static inline z8::fix32 operator/(z8::fix32 x, int y) { return x / z8::fix32(y); }
 static inline z8::fix32 operator+(int x, z8::fix32 y) { return z8::fix32(x) + y; }
