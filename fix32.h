@@ -1,7 +1,7 @@
 //
 //  ZEPTO-8 — Fantasy console emulator
 //
-//  Copyright © 2016—2017 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2016—2019 Sam Hocevar <sam@hocevar.net>
 //
 //  This program is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -25,12 +25,12 @@ struct fix32
 
     /* Convert from/to double */
     inline fix32(double d)
-      : m_bits((int32_t)std::round(std::ldexp(d, 16)))
+      : m_bits((int32_t)std::round(d * 65536.0))
     {}
 
     inline operator double() const
     {
-        return std::ldexp((double)m_bits, -16);
+        return (double)m_bits * (1.0 / 65536.0);
     }
 
     /* Conversions up to int16_t are allowed */
@@ -66,6 +66,8 @@ struct fix32
     inline operator int64_t() const { return m_bits >> 16; }
     inline operator uint64_t() const { return m_bits >> 16; }
 
+    /* Additional casts for long and unsigned long on architectures where
+     * these are not the same types as their cstdint equivalents. */
     template<typename T,
              typename std::enable_if<(std::is_same<T, long>::value ||
                                       std::is_same<T, unsigned long>::value) &&
