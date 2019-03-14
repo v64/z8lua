@@ -18,9 +18,8 @@
 
 
 #undef PI
-#define PI	((lua_Number)(3.1415926535897932384626433832795))
-#define RADIANS_PER_DEGREE	((lua_Number)(PI/180.0))
-
+const lua_Number PI(3.1415926535897932384626433832795);
+const lua_Number RADIANS_PER_DEGREE(PI / lua_Number(180.0));
 
 
 static int math_abs (lua_State *L) {

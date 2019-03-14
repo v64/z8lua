@@ -30,52 +30,9 @@ struct fix32
 
     inline operator double() const
     {
-        return (double)m_bits * (1.0 / 65536.0);
+        return (double)m_bits * (1.0 / 65536.0); 
     }
 
-    /* Conversions up to int16_t are allowed */
-    inline fix32(int8_t x)  : m_bits((int32_t)(x << 16)) {}
-    inline fix32(uint8_t x) : m_bits((int32_t)(x << 16)) {}
-    inline fix32(int16_t x) : m_bits((int32_t)(x << 16)) {}
-
-    /* Anything above int16_t is risky because of precision loss */
-    inline fix32(uint16_t x) : m_bits((int32_t)(x << 16)) {}
-    inline fix32(int32_t x)  : m_bits((int32_t)(x << 16)) {}
-    inline fix32(uint32_t x) : m_bits((int32_t)(x << 16)) {}
-    inline fix32(int64_t x)  : m_bits((int32_t)(x << 16)) {}
-    inline fix32(uint64_t x) : m_bits((int32_t)(x << 16)) {}
-
-    /* Support for long and unsigned long when it is a distinct
-     * type from the standard int*_t types, e.g. on Windows. */
-    template<typename T,
-             typename std::enable_if<(std::is_same<T, long>::value ||
-                                      std::is_same<T, unsigned long>::value) &&
-                                     !std::is_same<T, int32_t>::value &&
-                                     !std::is_same<T, uint32_t>::value &&
-                                     !std::is_same<T, int64_t>::value &&
-                                     !std::is_same<T, uint64_t>::value>::type *...>
-    inline fix32(T x) : m_bits((int32_t)(x << 16)) {}
-
-    /* Explicit casts are all allowed */
-    inline operator int8_t() const { return m_bits >> 16; }
-    inline operator uint8_t() const { return m_bits >> 16; }
-    inline operator int16_t() const { return m_bits >> 16; }
-    inline operator uint16_t() const { return m_bits >> 16; }
-    inline operator int32_t() const { return m_bits >> 16; }
-    inline operator uint32_t() const { return m_bits >> 16; }
-    inline operator int64_t() const { return m_bits >> 16; }
-    inline operator uint64_t() const { return m_bits >> 16; }
-
-    /* Additional casts for long and unsigned long on architectures where
-     * these are not the same types as their cstdint equivalents. */
-    template<typename T,
-             typename std::enable_if<(std::is_same<T, long>::value ||
-                                      std::is_same<T, unsigned long>::value) &&
-                                     !std::is_same<T, int32_t>::value &&
-                                     !std::is_same<T, uint32_t>::value &&
-                                     !std::is_same<T, int64_t>::value &&
-                                     !std::is_same<T, uint64_t>::value>::type *...>
-    inline operator T() const { return (T)(m_bits >> 16); }
 
     /* Directly initialise bits */
     static inline fix32 frombits(int32_t x)
@@ -84,6 +41,7 @@ struct fix32
     }
 
     inline int32_t bits() const { return m_bits; }
+	inline int32_t toInt() const {return m_bits >> 16;}
 
     /* Comparisons */
     bool operator ==(fix32 x) const { return m_bits == x.m_bits; }
@@ -103,11 +61,12 @@ struct fix32
     fix32 const &operator +() const { return *this; }
     fix32 operator -() const { return frombits(-m_bits); }
     fix32 operator ~() const { return frombits(~m_bits); }
-
     fix32 operator +(fix32 x) const { return frombits(m_bits + x.m_bits); }
-    fix32 operator -(fix32 x) const { return frombits(m_bits - x.m_bits); }
+	fix32 operator+(int x) const { return frombits(m_bits + 0x10000*x);	}
+	fix32 operator -(fix32 x) const { return frombits(m_bits - x.m_bits); }
     fix32 operator &(fix32 x) const { return frombits(m_bits & x.m_bits); }
-    fix32 operator |(fix32 x) const { return frombits(m_bits | x.m_bits); }
+
+	fix32 operator |(fix32 x) const { return frombits(m_bits | x.m_bits); }
     fix32 operator ^(fix32 x) const { return frombits(m_bits ^ x.m_bits); }
 
     fix32 operator *(fix32 x) const
@@ -140,6 +99,34 @@ struct fix32
     static fix32 floor(fix32 x) { return frombits(x.m_bits & 0xffff0000); }
 
     static fix32 pow(fix32 x, fix32 y) { return fix32(std::pow((double)x, (double)y)); }
+	static fix32 fabs(fix32 x) { return fix32(std::fabs((double)x));	}
+	static fix32 sin(fix32 x) {	return fix32(std::sin((double)x));}
+	static fix32 sinh(fix32 x) { return fix32(std::sinh((double)x)); }
+	
+	static fix32 asin(fix32 x) { return fix32(std::asin((double)x)); }
+
+	static fix32 cos(fix32 x) {	return fix32(std::cos((double)x)); }
+	static fix32 cosh(fix32 x) { return fix32(std::cosh((double)x)); }
+	static fix32 acos(fix32 x) { return fix32(std::acos((double)x)); }
+	static fix32 tan(fix32 x) { return fix32(std::tan((double)x)); }
+	static fix32 tanh(fix32 x) { return fix32(std::tanh((double)x)); }
+	static fix32 atan(fix32 x) { return fix32(std::atan((double)x)); }
+	static fix32 atan2(fix32 x, fix32 y) { return fix32(std::atan2((double)x, (double)y)); }
+	static fix32 fmod(fix32 x, fix32 y) { return fix32(std::fmod((double)x, (double)y)); }
+	static fix32 modf(fix32 x, fix32* y) { 
+		double dy;
+		fix32 r = fix32(std::modf((double)x, &dy));
+		*y = fix32(dy);
+		return r;
+	}
+
+	static fix32 sqrt(fix32 x) { return fix32(std::sqrt((double)x)); }
+	static fix32 log(fix32 x) {	return fix32(std::log((double)x)); }
+	static fix32 log10(fix32 x) { return fix32(std::log10((double)x)); }
+	static fix32 exp(fix32 x) {	return fix32(std::exp((double)x)); }
+	static fix32 frexp(fix32 x, int* i) { return fix32(std::frexp((double)x, i)); }
+	static fix32 ldexp(fix32 x, int i) { return fix32(std::ldexp((double)x, i)); }
+
 
 private:
     int32_t m_bits;
