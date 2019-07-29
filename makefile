@@ -4,6 +4,10 @@
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
+LIBDIRS    :=  $(DEVKITPRO)/libnds
+export INCLUDE := -I. -I.. $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+           $(foreach dir,$(LIBDIRS),-I$(dir)/include/nds) \
+
 CWARNS= -pedantic -Wcast-align -Wpointer-arith -Wshadow \
         -Wsign-compare -Wundef -Wwrite-strings
 # -Wcast-qual
@@ -15,24 +19,16 @@ TESTS= -g -DLUA_USER_H='"ltests.h"'
 
 LOCAL = $(CWARNS)
 
-
-CC= g++
-CFLAGS= -Wall $(MYCFLAGS) -O2 -std=c++11
-AR= ar rcu
-RANLIB= ranlib
+CC= $(DEVKITPRO)/devkitARM/bin/arm-none-eabi-g++
+CFLAGS= -g -Wall -O2 -mcpu=arm9tdmi -mtune=arm9tdmi -std=c++11 -fomit-frame-pointer -ffast-math -mthumb-interwork -I$(DEVKITPRO)/libnds/include $(INCLUDE) -DARM9
+AR= $(DEVKITPRO)/devkitARM/arm-none-eabi/bin/ar rcu
+RANLIB= $(DEVKITPRO)/devkitARM/arm-none-eabi/bin/ranlib
 RM= rm -f
+LIBS= -lul -lpng -lm -lz -lfat -ldswifi9 -lmm9 -lnds9
 
 MYCFLAGS= $(LOCAL)
 MYLDFLAGS=
 MYLIBS=
-
-
-# enable Linux goodies
-MYCFLAGS= $(LOCAL) -DLUA_USE_LINUX
-MYLDFLAGS= -Wl,-E
-MYLIBS= -ldl -lreadline -lhistory
-
-
 
 # == END OF USER SETTINGS. NO NEED TO CHANGE ANYTHING BELOW THIS LINE =========
 
